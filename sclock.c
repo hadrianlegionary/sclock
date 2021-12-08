@@ -3,10 +3,10 @@
 #include <errno.h>
 #include <locale.h>
 #include <signal.h>
-//#include <unistd.h>
-//#include <poll.h>
 #include <ncurses.h>
 #include "digits.h"
+
+#define DRAW_BORDER() extended_border(L"║", L"║", L"═", L"═", L"╔", L"╗", L"╚", L"╝")
 
 const wchar_t* DRAWING_GLYPH = L"█";
 const int REFRESH_TIME = 1000; // milliseconds
@@ -83,7 +83,7 @@ void terminal_resize_handler()
 	endwin();
 	terminal_get_centers(&middle_y, &middle_x);
 	clear();
-	extended_border(L"║", L"║", L"═", L"═", L"╔", L"╗", L"╚", L"╝");
+	DRAW_BORDER();
 	refresh();
 }
 
@@ -91,10 +91,6 @@ void mainloop()
 {
 	char time_buffer[64] = {0};
 	char date_buffer[64] = {0};
-	// struct pollfd p_fd[1] = {{
-	// 	.fd = STDIN_FILENO,
-	// 	.events = POLLIN,
-	// }};
 
 	size_t date_fmt_len = 0;
 	int last_day = 0;
@@ -119,26 +115,20 @@ void mainloop()
 		}
 		refresh();
 
-		// if (poll(p_fd, 1, REFRESH_TIME) < 0 && errno != EINTR) {
-		// 	endwin();
-		// 	perror("poll");
-		// 	break;
-		// }
 		int chr;
-		//if (p_fd[0].revents & POLLIN) {
 		if ((chr = getch()) != ERR) {
 			switch (chr) {
 				case 'q': return;
 				case 'd':
 					disp_date = !disp_date;
 					clear();
-					extended_border(L"║", L"║", L"═", L"═", L"╔", L"╗", L"╚", L"╝");
+					DRAW_BORDER();
 					break;
 				case 'c':
 					attron(COLOR_PAIR(current_color++));
 					if (!current_color || current_color > 4)
 						current_color = 1;
-					extended_border(L"║", L"║", L"═", L"═", L"╔", L"╗", L"╚", L"╝");
+					DRAW_BORDER();
 					break;
 				case 'r': // redraw
 					terminal_resize_handler();
@@ -171,7 +161,7 @@ int main()
 	noecho();
 	curs_set(0);
 	terminal_get_centers(&middle_y, &middle_x);
-	extended_border(L"║", L"║", L"═", L"═", L"╔", L"╗", L"╚", L"╝");
+	DRAW_BORDER();
 
 	mainloop();
 
